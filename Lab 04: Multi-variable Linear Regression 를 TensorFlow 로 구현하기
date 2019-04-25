@@ -1,1 +1,133 @@
-# lab1
+
+Lab4 Multi-variable linear regression 
+# data and label
+x1 = [ 73.,  93.,  89.,  96.,  73.]    
+x2 = [ 80.,  88.,  91.,  98.,  66.]
+x3 = [ 75.,  93.,  90., 100.,  70.]
+Y  = [152., 185., 180., 196., 142.]
+# X=입력데이터 Y=출력데이터(=정답,예측값,레이블)
+ 
+# random weights
+w1 = tf.Variable(tf.random_normal([1]))      
+w2 = tf.Variable(tf.random_normal([1]))       
+w3 = tf.Variable(tf.random_normal([1]))
+b  = tf.Variable(tf.random_normal([1]))
+#변수(x)가 3개이므로 weight도 3개가 필요, b는 하나가 필요하다.
+#hypothesis = w1 * x1 +  w2 * x2 + w3 * x3 + b 코드로도 이렇게 만들어진다.
+#초기값은 전부 [1]로 줬다. 초기값은 아무값이나 줘도 좋고 일반적으로는 랜덤값을 준다.
+
+learning_rate = 0.000001
+#learning_rate는 작은 값으로 준다.
+
+for i in range(1000+1):                                                            
+    with tf.GradientTape() as tape:    
+#학습은 Gradient descent를 이용해 구현하는데 여기선 Gradient table을 사용해 구현하였다.                                         
+    hypothesis = w1 * x1 +  w2 * x2 + w3 * x3 + b
+        cost = tf.reduce_mean(tf.square(hypothesis – Y))  
+#cost는 hypothesis에서 실제값을 뺀 것, 즉 오차, cost는 그 오차 제곱의 평균값을 정의했다.  
+    w1_grad, w2_grad, w3_grad, b_grad = tape.gradient(cost, [w1, w2, w3, b])   
+#안에있는 변수들의 전부를 tape에 기록하고 tape에 gradient를 호출해서 이 함수에 대한 4개의 변수 (w1,w2,w3,b) 들에 대한 기울기값(gradient값)을 구한다.
+기울기값은 각각 w1_grad,w2_grad, w3_grad, b_grad에 4개의 gradient값이 할당이 된다.
+    
+  #4개의 gradient값을 개별 w1,w2,w3 와 b값에 업데이트해준다.
+    w1.assign_sub(learning_rate * w1_grad)  
+#업데이트할 때 assign_sub사용 
+    w2.assign_sub(learning_rate * w2_grad)
+    w3.assign_sub(learning_rate * w3_grad)
+    b.assign_sub(learning_rate * b_grad)    
+#여기까지가 Gradient descent(경사하강법)을 구현해 weight값을 지속적으로 업데이트해 나가는 과정
+
+    if i % 50 == 0:                                    
+ # 50번 마다 cost값 출력
+      print("{:5} | {:12.4f}".format(i, cost.numpy()))
+
+    0 |   11325.9121                                    
+   50 |     135.3618
+  100 |      11.1817
+  150 |       9.7940
+  200 |       9.7687
+  250 |       9.7587
+  300 |       9.7489
+  350 |       9.7389
+  400 |       9.7292
+  450 |       9.7194
+  500 |       9.7096
+  550 |       9.6999
+  600 |       9.6903
+  650 |       9.6806
+  700 |       9.6709
+  750 |       9.6612
+  800 |       9.6517
+  850 |       9.6421
+  900 |       9.6325
+  950 |       9.6229
+ 1000 |       9.6134
+ 
+#cost가 처음엔 굉장히 큰 값이었다가 급속히 줄어들다가 점점 줄어들지 않는 모습을 모이고 있다.  
+ 
+ 
+ [ Multi-variable linear regression (2)]
+ data = np.array([                     
+    # X1,   X2,    X3,   y
+    [ 73.,  80.,  75., 152. ],
+    [ 93.,  88.,  93., 185. ],
+    [ 89.,  91.,  90., 180. ],
+    [ 96.,  98., 100., 196. ],
+    [ 73.,  66.,  70., 142. ]
+], dtype=np.float32)
+
+# slice data
+X = data[:, :-1]                        #x는 처음부터 마지막 컬럼을 제외한 나머지 컬럼 
+y = data[:, [-1]]                       #y는 처음부터 마지막 컬럼
+
+W = tf.Variable(tf.random_normal([3, 1]))           
+# w는 x의 컬럼 개수만큼 정의 low수는 3개이고 출력값은 1개이니 [3,1]
+w의행은 입력데이터의 x의 컬럼갯수와 동일해야한다.
+b = tf.Variable(tf.random_normal([1]))  
+
+learning_rate = 0.000001
+#작은 상수값으로 정의 
+# hypothesis, prediction function
+def predict(X):                          
+#predict함수는 x,w로 정의하였다.b는 생략가능하다.
+    return tf.matmul(X, W) + b
+
+print("epoch | cost")
+
+n_epochs = 2000     #한번 도는 것을 epoch라고 한다.  
+for i in range(n_epochs+1):     #n_epochs+1만큼 반복한다= 2000번 순회 반복
+    with tf.GradientTape() as tape:  #변수의 계산값들을 tape에 기록
+        cost = tf.reduce_mean((tf.square(predict(X) - y))) 
+
+    W_grad, b_grad = tape.gradient(cost, [W, b])  # W,b 미분값을 업데이트 시켜준다.
+
+    #W와 b를 지속적으로 업데이트함
+    W.assign_sub(learning_rate * W_grad)
+    b.assign_sub(learning_rate * b_grad)
+    
+    if i % 100 == 0:   #100번마다 w값을 기록한다
+        print("{:5} | {:10.4f}".format(i, cost.numpy()))
+
+epoch | cost
+    0 |  5455.5903                                                         
+  100 |    31.7443
+  200 |    30.9326
+  300 |    30.7894
+  400 |    30.6468
+  500 |    30.5055
+  600 |    30.3644
+  700 |    30.2242
+  800 |    30.0849
+  900 |    29.9463
+ 1000 |    29.8081
+ 1100 |    29.6710
+ 1200 |    29.5348
+ 1300 |    29.3989
+ 1400 |    29.2641
+ 1500 |    29.1299
+ 1600 |    28.9961
+ 1700 |    28.8634
+ 1800 |    28.7313
+ 1900 |    28.5997
+ 2000 |    28.4689
+# cost값 처음엔 엄청 크다가 급속하게 줄어서 더 이상 줄어들지 않게 된다.
