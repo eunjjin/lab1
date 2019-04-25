@@ -1,1 +1,69 @@
+Lab02  Simple Linear Refression = 단순 선형회귀
+(간단 설명)
+Hypothesis 
+H(x) = Wx + b  (일차식)
+가설함수 , 가설, 우리의 예측 다 동일한 말 
+cost는 에러의 제곱의 평균값으로 정의함 
 
+
+import tensorflow as tf  #tensorflow를 tf로 지정
+import numpy as np    #numpy를 np로 지정 
+tf.enable_eager_execution() #eager_execution을 활성화시킴= 즉시실행
+
+# Data
+x_data = [1, 2, 3, 4, 5]  #x 데이터 = 입력값
+y_data = [1, 2, 3, 4, 5]  #y 데이터 = 산출값
+ 
+# W, b initialize 
+
+W = tf.Variable(2.9)  # 2.9를 초기 w값으로 지정
+b = tf.Variable(0.5)   # 0.5를초기 b값으로 지정
+#변수 두 개 w와 b를 준비한다. 초기에 w,b의 값을 지정 
+
+learning_rate=0.01  #learning_rate를 상수로 지정
+for i in range(100+1): #학습을 100회 반복
+    # Gradient descent         
+# Gradient descent(경사 하강법): 최소화 문제에 많이 사용.
+Gradient descent라는 알고리즘을 통해서 w,b값을 지속적으로 갱신할 것임 
+ = 굉장히 핵심적인 부분         
+    with tf.GradientTape() as tape:
+        hypothesis = W * x_data + b   #가설
+        cost = tf.reduce_mean(tf.square(hypothesis – y_data))  
+#가설과 실체값의 차이 = 에러 제곱의 평균
+    W_grad, b_grad = tape.gradient(cost, [W, b])
+#cost함수에대해  w,b에 대한 미분값을 각각 구해 w,b를 업데이트
+    W.assign_sub(learning_rate * W_grad)  # w값 업데이트
+    b.assign_sub(learning_rate * b_grad)   #b값 업데이트
+   #여기까지가 w,b를 한번 업데이트한 것 
+ if i % 10 == 0:
+=중간에 w와 b값이 어떻게 변해가는지 10번에 한번씩 print하여 변해가는값을 출력
+      print("{:5}|{:10.4f}|{:10.4f}|{:10.6f}".format(i, W.numpy(), b.numpy(), cost))
+
+print()
+
+
+#   I       w          b      cost
+    0|    2.4520|    0.3760| 45.660004
+   10|    1.1036|    0.0034|  0.206336
+   20|    1.0128|   -0.0209|  0.001026
+   30|    1.0065|   -0.0218|  0.000093
+   40|    1.0059|   -0.0212|  0.000083
+   50|    1.0057|   -0.0205|  0.000077
+   60|    1.0055|   -0.0198|  0.000072
+   70|    1.0053|   -0.0192|  0.000067
+   80|    1.0051|   -0.0185|  0.000063
+   90|    1.0050|   -0.0179|  0.000059
+#i는 0부터 100까지
+b는 0에 수렴해지만 –로 떨어지는걸로 보아 조금 오차가 나는 것을 알수있음
+cost는 작으면 작을수록 좋은데 원래의 값이 45였다가 마지막으로 갈수록 거의 0과 가까워짐(0으로 수렴) 이것은 ’우리의 모델 실제 값을 예측하는데 잘 맞게 되었다.‘라는 것을 의미
+=실제값 예측이 정확하게 되어가고 있음
+
+# predict
+print(W * 5 + b) #새로운 데이터 값, x에 5를 지정
+print(W * 2.5 + b)  #새로운 데이터에 값, 2.5를 지정
+
+tf.Tensor(5.0066934, shape=(), dtype=float32) 
+tf.Tensor(2.4946523, shape=(), dtype=float32)
+#결과적으로 출력값이 입력값과 거의 같게 나옴.
+5를 넣었는데 5로 
+2.5를 넣었는데 2.49로 =약간의 오차가 있지만 거의 정확하다고 볼수있음 
